@@ -79,9 +79,7 @@ router.get('/getAllData', function(req, res) {
 
 router.get('/getData', function(req, res) {
 	console.log(req.query);
-	var key = req.query.key;
-	var interval = req.query.interval;
-	codeModel.getData(key,interval,function(aErr,aData){
+	codeModel.getData(req.query,function(aErr,aData){
 		if(aErr) res.json(aErr);
 		else res.json(aData);
 	});
