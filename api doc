@@ -1,0 +1,5 @@
+API Endpoints           Fields                                  Returns
+/activateItemPackage    user_id,packageType={1/2/3}             {"status":200,"desc":"Package activation OK"}
+/getItemList            user_id                                 item{"flower":0,"wsplash":0,"wball":0,"snack":0,"wpipe":0} 
+                                                                token_count
+/updateItemList         user_id,used_item,amount_of_used_token  {"status":200,"desc":"Item list Updated"}

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css" integrity="sha384-Zug+QiDoJOrZ5t4lssLdxGhVrurbmBWopoEl+M6BdEfwnCJZtKxi1KgxUyJq13dy"
+        crossorigin="anonymous">
+    <link rel="stylesheet" href="./assets/css/bootstrap-datepicker.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-beta.3/js/bootstrap.min.js"></script>
+    <script src="./assets/js/bootstrap-datepicker.min.js"></script>
+    
+</head>
+
+<body>
+    <div class="container justify-content-center">
+        <div class=" row">
+            <div class="dropdown col-md-6">
+                <label> Customer Level: &nbsp;</label>
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu" data-toggle="dropdown" aria-haspopup="true"
+                    aria-expanded="false">
+                    choose customer level
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenu2">
+                    <button class="dropdown-item" customer_level="customer_level" type="button" id="shan_pro">shan_pro</button>
+                    <button class="dropdown-item" customer_level="customer_level" type="button" id="shan_beginner">shan_beginner</button>
+                    <button class="dropdown-item" customer_level="customer_level" type="button" id="shan_inter">shan_inter</button>
+                    <button class="dropdown-item" customer_level="customer_level" type="button" id="shan_master">shan_master</button>
+                    <button class="dropdown-item" customer_level="customer_level" type="button" id="shan_special">shan_special</button>
+                    <button class="dropdown-item" customer_level="customer_level" type="button" id="shan_adv">shan_adv</button>
+                </div>
+            </div>
+            <div class="dropdown col-md-6">
+                <label> Interval Level: &nbsp;</label>
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true"
+                    aria-expanded="false">
+                   choose interval
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenu2">
+                    <button class="dropdown-item" type="button" interval="interval" id="daily">Daily</button>
+                    <button class="dropdown-item" type="button" interval="interval" id="hourly">Hourly</button>
+                    
+                </div>
+            </div>
+         </div>
+         <br>
+         <div class="row">   
+            <div class="col-md-4">
+                <label> Start Date: &nbsp;</label>
+                <input type="text" class="datepicker show_date"   id="start_date"/>
+                
+            </div>
+            <div class="col-md-4">
+                <label> End Date: &nbsp;</label>
+                <input type="text" class="datepicker show_date"  id="end_date"/>
+               
+            </div>
+            <div class="col-md-4">
+                <label> Year: &nbsp;</label>
+                <input type="text" class="datepicker"  id="show_year" />
+               
+            </div>
+         
+           
+        </div>
+        <button id='search_btn' class="btn btn-primary">Search</button>
+        <div class='row'>
+            <div class="chart-container col-md-10" style="position: relative; height:40vh;">
+                <canvas id="mychart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        body{
+            margin-top: 20px; 
+
+        }
+
+    </style>
+</body>
+<script>
+    $(document).ready(function () {
+        var customer_level= "";
+        var interval= "daily";
+       
+
+        $(".show_date").datepicker( {
+            format: "yyyy-mm-dd"
+        });
+
+        $("#show_year").datepicker( {
+            format: " yyyy",
+            viewMode: "years", 
+            minViewMode: "years"
+        });
+
+        $('#search_btn').click(function(){
+            var _year = $('#show_year').val();
+            var start_date = $('#start_date').val();
+            var end_date = $('#end_date').val();
+            
+            
+            var url = 'home/getData?year=' + _year+ '&start_date' + start_date+'&end_date'+end_date;
+          /*  $.get(url,function(resp){
+
+
+
+            });
+                */
+        });
+      
+        var SERVER_URL = "http://localhost:5095/getData";
+        $('.dropdown-item').click(function (e) {
+            // this.attr('active','active');
+
+            if($(this).attr("interval")) interval = this.id || "interval";
+            if($(this).attr("customer_level")) customer_level = this.id || "customer";
+            console.log(interval);
+            console.log(customer_level);
+            SERVER_URL += "?key="+customer_level+"&interval="+interval;
+            $('#dropdownMenu').html(customer_level);
+            $('#dropdownMenu2').html(interval);
+            e.preventDefault();
+            $.get(SERVER_URL , function (record) {
+                record = record.data;
+                if (record !== null) {
+                    var date = record.map(function (rec) {
+                        return rec.ccu_date;
+                    });
+                    var value = record.map(function (rec) {
+                        return rec.count;
+                    });
+
+                    var ctx = document.getElementById("mychart");
+                    var myChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: date,
+                            datasets: [{
+                                label: 'All Shan CCU Data',
+                                data: value,
+                                backgroundColor: [
+                                ],
+                                borderColor: [
+                                ],
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            scales: {
+                                yAxes: [{
+                                    ticks: {
+                                        beginAtZero: true
+                                    }
+                                }]
+                            }
+                        }
+                    });
+
+                }
+            })
+            /*
+            $.get(SERVER_URL + "?key=" + customer_level +"&interval="+interval, function (record) {
+                record = record.data;
+                if (record !== null) {
+                    var date = record.map(function (rec) {
+                        return rec.ccu_date;
+                    });
+                    var value = record.map(function (rec) {
+                        return rec.count;
+                    });
+
+                    var ctx = document.getElementById("mychart");
+                    var myChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: date,
+                            datasets: [{
+                                label: 'All Shan CCU Data',
+                                data: value,
+                                backgroundColor: [
+                                ],
+                                borderColor: [
+                                ],
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            scales: {
+                                yAxes: [{
+                                    ticks: {
+                                        beginAtZero: true
+                                    }
+                                }]
+                            }
+                        }
+                    });
+
+                }
+            })
+            */
+        });
+    });
+
+</script>
+</html>
